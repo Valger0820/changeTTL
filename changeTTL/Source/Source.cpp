@@ -1,55 +1,39 @@
 #include <iostream>
 #include <windows.h>
+#include <string>
 
 using namespace std;
+
+void setRegistryValue(const string& registryPath, const string& valueName, DWORD valueData) {
+	HKEY hKey;
+	LONG openRes = RegOpenKeyExA(HKEY_LOCAL_MACHINE, registryPath.c_str(), 0, KEY_SET_VALUE, &hKey);
+
+	if (openRes != ERROR_SUCCESS) {
+		cerr << "ÐžÑˆÐ¸Ð±ÐºÐ° Ð¿Ñ€Ð¸ Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚Ð¸Ð¸ ÐºÐ»ÑŽÑ‡Ð°: " << openRes << endl;
+		return;
+	}
+
+	LONG setRes = RegSetValueExA(hKey, valueName.c_str(), 0, REG_DWORD, (const BYTE*)&valueData, sizeof(valueData));
+
+	if (setRes == ERROR_SUCCESS) {
+		cout << "DWORD Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ ÑƒÑÐ¿ÐµÑˆÐ½Ð¾ ÑÐ¾Ð·Ð´Ð°Ð½Ð¾." << endl;
+	}
+	else {
+		cerr << "ÐžÑˆÐ¸Ð±ÐºÐ° Ð¿Ñ€Ð¸ ÑƒÑÑ‚Ð°Ð½Ð¾Ð²ÐºÐµ Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ñ: " << setRes << endl;
+	}
+
+	RegCloseKey(hKey);
+}
 
 int main() {
 	setlocale(LC_ALL, "Ru");
 
-	const char* registryPath = "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters";
-	const char* valueName = "DefaultTTL";
+	const string registryPath = "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters";
+	const string valueName = "DefaultTTL";
 
 	DWORD valueData = 65;
 
-	HKEY hKey;
-	LONG openRes = RegOpenKeyExA(HKEY_LOCAL_MACHINE, registryPath, 0, KEY_SET_VALUE, &hKey);
-
-
-    if (openRes == ERROR_SUCCESS) {
-
-    }
-    else {
-        cerr << "Îøèáêà ïðè îòêðûòèè êëþ÷à: " << openRes << endl;
-    }
-
-
-	try
-	{
-		if (openRes != ERROR_SUCCESS) {
-			throw runtime_error("Îøèáêà ïðè îòêðûòèè êëþ÷à: ");
-		}
-		try
-		{
-			LONG setRes = RegSetValueExA(hKey, valueName, 0, REG_DWORD, (const BYTE*)&valueData, sizeof(valueData));
-
-			if (setRes == ERROR_SUCCESS) {
-				cout << "DWORD çíà÷åíèå óñïåøíî ñîçäàíî." << endl;
-			}
-			else {
-				throw runtime_error("Îøèáêà ïðè óñòàíîâêå çíà÷åíèÿ : ");
-			}
-
-			RegCloseKey(hKey);
-		}
-		catch (const exception& e)
-		{
-			cout << e.what() << endl;
-		}
-	}
-	catch (const exception& e)
-	{
-		cout << openRes << endl << e.what() << endl;
-	}
+	setRegistryValue(registryPath, valueName, valueData);
 	
 	return 0;
 }
